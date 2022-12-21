@@ -1,63 +1,40 @@
+
+
 package com.example.android.unscramble.ui.game
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 
-// state holder
 class GameViewModel : ViewModel() {
 
+    private val _score = MutableLiveData(0)
+     private var _counter = 0
+    private val _currentScrambledWord = MutableLiveData<String>()
+    private val _currentWordCount = MutableLiveData(0)
 
-
-
-    // to save data state if ui state is changed
-    // declare variables
-    // local for viewmodel to modify
-    private var _score = 0
-    private var _counter = 0
-    private var _currentScrambledWord = "test"
-    private var _currentWordCount = 0
-
-
-    // global for other classes to use
-    // no other class can change its value (it only gets the value of "_counter")
-    val score : Int
+    val score: LiveData<Int>
         get() = _score
+       val counter: Int
+       get() = _counter
 
-    val counter: Int
-        get() = _counter
-
-    val currentScrambledWord: String
-        get() = _currentScrambledWord
-
-    val currentWordCount: Int
+    val currentWordCount: LiveData<Int>
         get() = _currentWordCount
+
+    val currentScrambledWord: LiveData<String>
+        get() = _currentScrambledWord
 
     // hold a list of words you use in the game, to avoid repetitions
     private var wordsList: MutableList<String> = mutableListOf()
     private lateinit var currentWord: String // counter
 
-
-
-
-
-
-
-
-    // To Make The Project Start From This Point (This Function)
     init {
         getNextWord()
     }
 
-
-
-
-
-
-
-    // New Function -----------------------------------------------------------------------
-    // functions needed to update data based on user clicks
-    // Get next word
     private fun getNextWord() {
+
         // random word
         currentWord = allWordsList.random()
 
@@ -70,83 +47,44 @@ class GameViewModel : ViewModel() {
             // if true
             // keep shuffle()
             tempWord.shuffle()
-        }
+        }// end while
 
         // check if a word has been used already
         if (wordsList.contains(currentWord)) {
             getNextWord()
         } else {
-            _currentScrambledWord = String(tempWord)
-            ++_currentWordCount
+            _currentScrambledWord.value = String(tempWord)
+            _currentWordCount.value = (_currentWordCount.value)?.inc()
             wordsList.add(currentWord)
-        }
+        }// end else
 
-    }
+    } // end getNextWord
 
-
-
-
-
-
-
-    // New Function -----------------------------------------------------------------------
-    // Returns true if the current word count is less than MAX_NO_OF_WORDS.
-    // Updates the next word.
     fun nextWord(): Boolean {
-        return if (currentWordCount < MAX_NO_OF_WORDS) {
+        return if (_currentWordCount.value!! < MAX_NO_OF_WORDS) {
             getNextWord()
             true
         } else false
-    }
+    }//end nextWord
 
+    private fun increaseScore() {
+        _score.value = (_score.value)?.plus(SCORE_INCREASE)
+    }// end increaseScore
 
-
-
-
-
-
-    // New Function -----------------------------------------------------------------------
-    // Update score
-    private fun increaseScore(){
-        _score += SCORE_INCREASE
-    }
-
-
-
-
-
-
-
-    // New Function -----------------------------------------------------------------------
-    fun isUserWordCorrect(playerWord: String) : Boolean{
-        if (playerWord.equals(currentWord, true)){
+    fun isUserWordCorrect(playerWord: String): Boolean {
+        if (playerWord.equals(currentWord, true)) {
             increaseScore()
             return true
         } else
             return false
-    }
+    }// end isUserWordCorrect
 
-
-
-
-
-
-
-
-    // New Function -----------------------------------------------------------------------
-    //Re-initializes the game data to restart the game.
     fun reinitializeData() {
-        _score = 0
-        _currentWordCount = 0
+        _score.value = 0
+        _currentWordCount.value = 0
         wordsList.clear()
         getNextWord()
-    }
+    }// end reinitializeData
 
 
-
-
-
-
-
-
-} //End ViewModell
+}// end view model
